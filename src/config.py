@@ -25,6 +25,14 @@ BINANCE_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "12h", "1d", "
 """SWAP DATA CONFIG"""
 SWAP_POLLING_DELAY = 30  # Swap polling delay (in seconds) to handle rate limits.
 
+"""LARGE ORDER MONITOR CONFIG"""
+LARGE_ORDER_MONITOR_ENABLED = True  # Enable/disable large order monitoring
+LARGE_ORDER_THRESHOLD_USDT = 2_000_000  # Threshold in USDT to trigger alert
+LARGE_ORDER_TIME_WINDOW_MINUTES = 5  # Time window in minutes
+LARGE_ORDER_COOLDOWN_MINUTES = 10  # Cooldown period in minutes
+LARGE_ORDER_MONITORED_SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]  # Symbols to monitor
+LARGE_ORDER_DATA_PATH = "data/large_orders"  # Data storage path
+
 """DATABASE PREFERENCES & PATHS"""
 USE_MONGO_DB = False
 WHITELIST_ROOT = join(dirname(abspath(__file__)), "whitelist")

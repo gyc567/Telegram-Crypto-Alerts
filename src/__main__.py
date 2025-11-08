@@ -3,6 +3,15 @@ from os import getenv
 from time import sleep
 
 from .alert_processes import CEXAlertProcess, TechnicalAlertProcess
+from .config import (
+    LARGE_ORDER_MONITOR_ENABLED,
+    LARGE_ORDER_THRESHOLD_USDT,
+    LARGE_ORDER_TIME_WINDOW_MINUTES,
+    LARGE_ORDER_COOLDOWN_MINUTES,
+    LARGE_ORDER_MONITORED_SYMBOLS,
+    LARGE_ORDER_DATA_PATH,
+)
+from .monitor.large_orders import LargeOrderMonitor
 from .telegram import TelegramBot
 from .user_configuration import get_whitelist
 from .utils import handle_env
@@ -32,6 +41,22 @@ if __name__ == "__main__":
 
     # Run the TG bot in a daemon thread
     threading.Thread(target=telegram_bot.run, daemon=True).start()
+
+    # Initialize and start Large Order Monitor
+    if LARGE_ORDER_MONITOR_ENABLED:
+        logger.info("Initializing Large Order Monitor...")
+        large_order_monitor = LargeOrderMonitor(
+            telegram_bot=telegram_bot,
+            symbols=LARGE_ORDER_MONITORED_SYMBOLS,
+            threshold_usdt=LARGE_ORDER_THRESHOLD_USDT,
+            time_window_minutes=LARGE_ORDER_TIME_WINDOW_MINUTES,
+            cooldown_minutes=LARGE_ORDER_COOLDOWN_MINUTES,
+            storage_path=LARGE_ORDER_DATA_PATH
+        )
+        large_order_monitor.start()
+    else:
+        large_order_monitor = None
+        logger.info("Large Order Monitor is disabled")
 
     # Run the CEXAlertProcess in a daemon thread
     threading.Thread(
