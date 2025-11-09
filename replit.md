@@ -5,7 +5,7 @@ This is a Telegram bot that provides cryptocurrency price alerts and technical i
 
 **Purpose**: Monitor cryptocurrency prices from Binance and send alerts via Telegram when specified conditions are met.
 
-**Current State**: Fully configured and running on Replit. The bot is actively monitoring cryptocurrency markets and ready to receive commands via Telegram.
+**Current State**: Fully configured and running on Replit. The bot is actively monitoring cryptocurrency markets with both price alerts and technical indicators enabled. Ready to receive commands via Telegram.
 
 ## Project Architecture
 
@@ -87,7 +87,9 @@ See the README.md for complete command documentation.
   - Installed Python 3.11 and all required dependencies
   - Fixed import issues in the large order monitoring module
   - Configured workflow to run the bot automatically
+  - Added Taapi.io API credentials for technical indicator support
   - Bot successfully started and monitoring cryptocurrency markets
+  - All environment variables configured (TELEGRAM_BOT_TOKEN, TELEGRAM_USER_ID, LOCATION, TAAPIIO_APIKEY, TAAPIIO_TIER)
 
 ## Development Notes
 
