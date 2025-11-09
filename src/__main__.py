@@ -5,6 +5,7 @@ import asyncio
 
 from .alert_processes import CEXAlertProcess, TechnicalAlertProcess
 from .alert_processes.large_order import LargeOrderMonitorProcess
+from .alert_processes.taker_order import TakerOrderAlertProcess
 from .config import (
     LARGE_ORDER_MONITOR_ENABLED,
     LARGE_ORDER_THRESHOLD_USDT,
@@ -12,6 +13,7 @@ from .config import (
     LARGE_ORDER_COOLDOWN_MINUTES,
     LARGE_ORDER_MONITORED_SYMBOLS,
     LARGE_ORDER_DATA_PATH,
+    TAKER_ORDER_MONITOR_ENABLED,
 )
 from .telegram import TelegramBot
 from .user_configuration import get_whitelist
@@ -59,6 +61,16 @@ if __name__ == "__main__":
     else:
         large_order_monitor = None
         logger.info("Large Order Monitor is disabled")
+
+    # Initialize and start Taker Order Monitor
+    if TAKER_ORDER_MONITOR_ENABLED:
+        logger.info("Initializing Taker Order Monitor...")
+        taker_order_monitor = TakerOrderAlertProcess(bot=telegram_bot)
+        # Run in daemon thread
+        threading.Thread(target=taker_order_monitor.run, daemon=True).start()
+        logger.info("Taker Order Monitor started")
+    else:
+        logger.info("Taker Order Monitor is disabled")
 
     # Run the CEXAlertProcess in a daemon thread
     threading.Thread(

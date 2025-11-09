@@ -33,6 +33,30 @@ LARGE_ORDER_COOLDOWN_MINUTES = 10  # Cooldown period in minutes
 LARGE_ORDER_MONITORED_SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]  # Symbols to monitor
 LARGE_ORDER_DATA_PATH = "data/large_orders"  # Data storage path
 
+"""TAKER ORDER MONITOR CONFIG"""
+TAKER_ORDER_MONITOR_ENABLED = True  # Enable/disable taker order monitoring
+TAKER_ORDER_MONITORED_SYMBOLS = ["BTCUSDT", "ETHUSDT"]  # Symbols to monitor
+
+TAKER_ORDER_SINGLE_THRESHOLDS = {
+    "BTCUSDT": 50,  # BTC quantity threshold (triggers on quantity only)
+    "ETHUSDT": 2000  # ETH quantity threshold (triggers on quantity only)
+}
+
+TAKER_ORDER_CUMULATIVE_CONFIG = {
+    "window_size": 60,  # 1-minute window (seconds)
+    "threshold_usd": 1_000_000,  # $1M USD threshold
+    "min_order_count": 5,  # Minimum number of orders
+    "directions": ["BUY", "SELL"]  # Monitor both directions
+}
+
+TAKER_ORDER_COOLDOWN_CONFIG = {
+    "single_order": 60,  # Single order alert cooldown (seconds)
+    "cumulative": 300,  # Cumulative alert cooldown (seconds)
+    "per_symbol": True  # Independent cooldown per symbol
+}
+
+TAKER_ORDER_DATA_PATH = "data/taker_orders"  # Data storage path
+
 """DATABASE PREFERENCES & PATHS"""
 USE_MONGO_DB = False
 WHITELIST_ROOT = join(dirname(abspath(__file__)), "whitelist")
