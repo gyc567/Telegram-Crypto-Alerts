@@ -377,7 +377,7 @@ class TelegramBot(TeleBot):
             # Add the simple price indicator:
             output = "<u><b>Simple Indicators:</b></u>\n"
             output += (
-                "<a href='https://github.com/hschickdevs/Telegram-Crypto-Alerts/tree/main#alerts'><b>PRICE</b></a> (Token Pair Spot Price):\n"
+                "<a href='https://github.com/gyc567/Telegram-Crypto-Alerts/tree/main#alerts'><b>PRICE</b></a> (Token Pair Spot Price):\n"
                 f"   • <u>Available Comparisons:</u>\n"
             )
             for comparison in SIMPLE_INDICATOR_COMPARISONS:
