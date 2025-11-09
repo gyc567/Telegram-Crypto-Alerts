@@ -2,7 +2,7 @@ import time
 from typing import List
 
 from src.logger import logger
-from ..models import CEXAlert
+from src.models import CEXAlert
 
 
 class TelegramNotifier:
@@ -44,7 +44,7 @@ class TelegramNotifier:
         """
         try:
             # Get whitelisted users
-            from ..user_configuration import get_whitelist
+            from src.user_configuration import get_whitelist
 
             whitelisted_users = get_whitelist()
 
