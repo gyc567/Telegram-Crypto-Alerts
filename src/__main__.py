@@ -1,8 +1,10 @@
 import threading
 from os import getenv
 from time import sleep
+import asyncio
 
 from .alert_processes import CEXAlertProcess, TechnicalAlertProcess
+from .alert_processes.large_order import LargeOrderMonitorProcess
 from .config import (
     LARGE_ORDER_MONITOR_ENABLED,
     LARGE_ORDER_THRESHOLD_USDT,
@@ -11,7 +13,6 @@ from .config import (
     LARGE_ORDER_MONITORED_SYMBOLS,
     LARGE_ORDER_DATA_PATH,
 )
-from .monitor.large_orders import LargeOrderMonitor
 from .telegram import TelegramBot
 from .user_configuration import get_whitelist
 from .utils import handle_env
@@ -45,15 +46,16 @@ if __name__ == "__main__":
     # Initialize and start Large Order Monitor
     if LARGE_ORDER_MONITOR_ENABLED:
         logger.info("Initializing Large Order Monitor...")
-        large_order_monitor = LargeOrderMonitor(
+        large_order_monitor = LargeOrderMonitorProcess(
             telegram_bot=telegram_bot,
             symbols=LARGE_ORDER_MONITORED_SYMBOLS,
-            threshold_usdt=LARGE_ORDER_THRESHOLD_USDT,
-            time_window_minutes=LARGE_ORDER_TIME_WINDOW_MINUTES,
-            cooldown_minutes=LARGE_ORDER_COOLDOWN_MINUTES,
-            storage_path=LARGE_ORDER_DATA_PATH
+            threshold_usd=LARGE_ORDER_THRESHOLD_USDT,
+            window_minutes=LARGE_ORDER_TIME_WINDOW_MINUTES,
+            cooldown_minutes=LARGE_ORDER_COOLDOWN_MINUTES
         )
-        large_order_monitor.start()
+        # Run in daemon thread
+        threading.Thread(target=asyncio.run, args=(large_order_monitor.run(),), daemon=True).start()
+        logger.info("Large Order Monitor started")
     else:
         large_order_monitor = None
         logger.info("Large Order Monitor is disabled")

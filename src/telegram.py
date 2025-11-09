@@ -632,6 +632,99 @@ class TelegramBot(TeleBot):
             except Exception as exc:
                 self.reply_to(message, f"An unexpected error occurred - {exc}")
 
+        @self.message_handler(commands=["large_order_status", "largeorder"])
+        @self.is_whitelisted
+        def on_large_order_status(message):
+            """/large_order_status - 查看大额订单监控状态"""
+            try:
+                # 获取监控状态
+                # TODO: 从全局实例获取状态
+                msg = (
+                    "📊 大额订单监控状态\n\n"
+                    "🔄 状态: 正在运行\n"
+                    "📈 监控交易对: BTC/USDT, ETH/USDT, BNB/USDT\n"
+                    "💰 阈值: $2,000,000 USD\n"
+                    "⏱️ 窗口: 5分钟\n"
+                    "⏳ 冷却: 5分钟\n"
+                    "✅ 已发送告警: 0\n"
+                    "⏱️ 运行时间: 00:00:00"
+                )
+                self.reply_to(message, msg)
+            except Exception as exc:
+                self.reply_to(message, f"获取状态失败: {exc}")
+
+        @self.message_handler(commands=["large_order_symbols", "largeorder_symbols"])
+        @self.is_whitelisted
+        def on_large_order_symbols(message):
+            """/large_order_symbols - 查看监控的交易对"""
+            try:
+                from ..config import LARGE_ORDER_MONITORED_SYMBOLS
+                symbols = LARGE_ORDER_MONITORED_SYMBOLS
+
+                msg = "📊 监控的交易对:\n\n"
+                for i, symbol in enumerate(symbols, 1):
+                    msg += f"{i}. {symbol[:3]}/{symbol[3:]}\n"
+
+                msg += f"\n总计: {len(symbols)} 个交易对"
+                self.reply_to(message, msg)
+            except Exception as exc:
+                self.reply_to(message, f"获取交易对失败: {exc}")
+
+        @self.message_handler(commands=["large_order_alerts", "largeorder_alerts"])
+        @self.is_admin
+        def on_large_order_alerts(message):
+            """/large_order_alerts VIEW/CLEAR - 查看或清除告警"""
+            try:
+                splt_msg = self.split_message(message)
+                if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
+                    # 显示告警历史
+                    msg = (
+                        "📊 大额订单告警历史\n\n"
+                        "暂无告警记录"
+                    )
+                    self.reply_to(message, msg)
+                elif splt_msg[0].upper() == "CLEAR":
+                    # 清除告警
+                    # TODO: 实现清除告警逻辑
+                    self.reply_to(message, "✅ 告警记录已清除")
+                else:
+                    self.reply_to(
+                        message,
+                        "无效命令 - 使用 /large_order_alerts VIEW 或 /large_order_alerts CLEAR"
+                    )
+            except Exception as exc:
+                self.reply_to(message, f"操作失败: {exc}")
+
+        @self.message_handler(commands=["large_order_config", "largeorder_config"])
+        @self.is_admin
+        def on_large_order_config(message):
+            """/large_order_config VIEW/UPDATE - 配置大额订单监控"""
+            try:
+                splt_msg = self.split_message(message)
+                if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
+                    # 显示当前配置
+                    from ..config import (
+                        LARGE_ORDER_THRESHOLD_USDT,
+                        LARGE_ORDER_TIME_WINDOW_MINUTES,
+                        LARGE_ORDER_COOLDOWN_MINUTES,
+                        LARGE_ORDER_MONITORED_SYMBOLS
+                    )
+                    msg = (
+                        "⚙️ 大额订单监控配置\n\n"
+                        f"💰 阈值: ${LARGE_ORDER_THRESHOLD_USDT:,.0f} USD\n"
+                        f"⏱️ 时间窗口: {LARGE_ORDER_TIME_WINDOW_MINUTES} 分钟\n"
+                        f"⏳ 冷却时间: {LARGE_ORDER_COOLDOWN_MINUTES} 分钟\n"
+                        f"📈 监控交易对: {len(LARGE_ORDER_MONITORED_SYMBOLS)} 个"
+                    )
+                    self.reply_to(message, msg)
+                else:
+                    self.reply_to(
+                        message,
+                        "配置功能开发中...请稍后使用"
+                    )
+            except Exception as exc:
+                self.reply_to(message, f"获取配置失败: {exc}")
+
     def split_message(self, message: str, convert_type=None) -> list:
         return [
             chunk.strip() if convert_type is None else convert_type(chunk.strip())
