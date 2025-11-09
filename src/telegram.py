@@ -700,7 +700,7 @@ class TelegramBot(TeleBot):
         def on_large_order_alerts(message):
             """/large_order_alerts VIEW/CLEAR - 查看或清除告警"""
             try:
-                splt_msg = self.split_message(message)
+                splt_msg = self.split_message(message.text)
                 if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
                     # 显示告警历史
                     msg = (
@@ -725,7 +725,7 @@ class TelegramBot(TeleBot):
         def on_large_order_config(message):
             """/large_order_config VIEW/UPDATE - 配置大额订单监控"""
             try:
-                splt_msg = self.split_message(message)
+                splt_msg = self.split_message(message.text)
                 if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
                     # 显示当前配置
                     from .config import (
