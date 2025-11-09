@@ -3,9 +3,9 @@
 ## Overview
 This is a Telegram bot that provides cryptocurrency price alerts and technical indicator monitoring. The bot uses the Telegram API to send alerts on price movements and technical indicators for cryptocurrency trading pairs.
 
-**Purpose**: Monitor cryptocurrency prices from Binance and send alerts via Telegram when specified conditions are met.
+**Purpose**: Monitor cryptocurrency prices from Binance and send alerts via Telegram when specified conditions are met, including smart money tracking through taker order monitoring.
 
-**Current State**: Fully configured and running on Replit. The bot is actively monitoring cryptocurrency markets and ready to receive commands via Telegram.
+**Current State**: Fully configured and running on Replit. The bot is actively monitoring cryptocurrency markets with both large order detection and taker order monitoring (smart money tracking) features enabled.
 
 ## Project Architecture
 
@@ -34,9 +34,15 @@ src/
 ├── alert_processes/         # Alert processing logic
 │   ├── base.py
 │   ├── cex.py              # CEX price alert processor
-│   └── technical.py        # Technical indicator alert processor
+│   ├── technical.py        # Technical indicator alert processor
+│   ├── large_order.py      # Large order monitoring processor
+│   └── taker_order.py      # Taker order monitoring processor (NEW)
 ├── monitor/                 # Monitoring modules
-│   └── large_orders/       # Large order detection system
+│   ├── common/             # Shared utilities (cooldown manager)
+│   ├── large_orders/       # Large order detection system
+│   └── taker_orders/       # Taker order (smart money) monitoring (NEW)
+│       ├── core/           # Single and cumulative monitors
+│       └── src/            # Tracker and models
 └── resources/              # Static resources (commands, help text, defaults)
 ```
 
@@ -44,8 +50,12 @@ src/
 1. **Price Alerts**: Monitor crypto pair prices with conditions like ABOVE, BELOW, % change, and 24-hour % change
 2. **Technical Indicators**: Support for RSI, MACD, Bollinger Bands, MA, SMA, EMA (requires Taapi.io API key)
 3. **Large Order Monitoring**: Real-time detection of large orders on Binance
-4. **Multi-user Support**: Whitelist system with admin controls
-5. **Configurable Alerts**: Cooldown periods, custom thresholds, and multiple notification channels
+4. **Taker Order Monitoring (Smart Money Tracking)**: NEW! Monitor aggressive taker orders
+   - Single order alerts: BTC ≥ 50, ETH ≥ 2000
+   - Cumulative alerts: ≥$1M USD in 60 seconds with ≥5 orders
+   - Smart cooldowns: 60s for single orders, 300s for cumulative
+5. **Multi-user Support**: Whitelist system with admin controls
+6. **Configurable Alerts**: Cooldown periods, custom thresholds, and multiple notification channels
 
 ## Environment Configuration
 
@@ -72,18 +82,42 @@ The bot runs automatically via the configured workflow. It will:
 
 ### Telegram Commands
 Key commands available in your Telegram chat:
+
+**Price & Indicator Alerts:**
 - `/view_alerts` - View all active alerts
 - `/new_alert` - Create a new price or technical alert
 - `/cancel_alert` - Cancel an existing alert
 - `/get_price <PAIR>` - Get current price for a trading pair
 - `/get_indicator` - Get current technical indicator values
+
+**Configuration:**
 - `/view_config` - View bot configuration
 - `/set_config` - Modify configuration settings
+
+**Large Order Monitoring:**
+- `/large_order_status` - View large order monitor status
+- `/large_order_config` - View/update configuration
+
+**Taker Order Monitoring (NEW):**
+- `/taker_status` or `/taker` - View taker order monitor status
+- `/taker_symbols` - List monitored trading pairs
+- `/taker_alerts` - View/clear taker alert history
+- `/taker_config` - View taker monitoring configuration
 
 See the README.md for complete command documentation.
 
 ## Recent Changes
-- **[2025-11-09]** Initial Replit setup completed
+- **[2025-11-09 PM]** Taker Order Monitoring feature implemented (CHANGE-2025-0105)
+  - Created complete taker order monitoring system with smart money tracking
+  - Single order detection: BTC ≥ 50, ETH ≥ 2000 (quantity-only thresholds)
+  - Cumulative detection: ≥$1M USD in 60-second rolling window with ≥5 orders
+  - Implemented thread-safe async callbacks with non-blocking Telegram alerts
+  - Added 4 new commands: /taker_status, /taker_symbols, /taker_alerts, /taker_config
+  - Created shared CooldownManager utility (60s single, 300s cumulative cooldowns)
+  - Integrated parallel to existing large order monitor with separate Binance WebSocket
+  - All monitors running cleanly with no errors (architect-reviewed and approved)
+
+- **[2025-11-09 AM]** Initial Replit setup completed
   - Installed Python 3.11 and all required dependencies
   - Fixed import issues in the large order monitoring module
   - Configured workflow to run the bot automatically
@@ -109,6 +143,30 @@ Enabled by default. Configuration in `src/config.py`:
 - `LARGE_ORDER_THRESHOLD_USDT`: Minimum order size to alert (default: $2M)
 - `LARGE_ORDER_TIME_WINDOW_MINUTES`: Time window for aggregation (default: 5 min)
 - `LARGE_ORDER_MONITORED_SYMBOLS`: Trading pairs to monitor
+
+### Taker Order Monitor (Smart Money Tracking)
+Enabled by default. Detects aggressive taker orders indicating smart money activity.
+
+**Configuration in `src/config.py`:**
+- `TAKER_ORDER_MONITOR_ENABLED`: Enable/disable feature (default: True)
+- `TAKER_ORDER_MONITORED_SYMBOLS`: Trading pairs to monitor (default: BTCUSDT, ETHUSDT)
+
+**Single Order Thresholds:**
+- `TAKER_ORDER_SINGLE_THRESHOLDS`: Quantity thresholds per symbol
+  - BTCUSDT: 50 BTC
+  - ETHUSDT: 2000 ETH
+
+**Cumulative Detection:**
+- `TAKER_ORDER_CUMULATIVE_CONFIG`:
+  - Window size: 60 seconds (rolling window)
+  - Threshold: $1,000,000 USD
+  - Minimum order count: 5 orders
+  - Directions: ["BUY", "SELL"]
+
+**Cooldown Configuration:**
+- `TAKER_ORDER_COOLDOWN_CONFIG`:
+  - Single order cooldown: 60 seconds
+  - Cumulative cooldown: 300 seconds (5 minutes)
 
 ## Troubleshooting
 
