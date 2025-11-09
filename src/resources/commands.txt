@@ -1,14 +1,19 @@
-help - Returns a link to the documentation
-id - Get your Telegram user ID
-new_alert - Usage: Variable by indicator type. See docs (/help)
-cancel_alert - Usage: /cancel_alert TOKEN/TOKEN alert_index
-indicators - Usage: /indicators
-view_alerts - Usage: /view_alerts TOKEN/TOKEN (or leave blank for all)
-get_price - Usage: /get_price TOKEN/TOKEN
-get_indicator - Usage: /get_indicator BASE/QUOTE INDICATOR TIMEFRAME PARAMS
-price_all - Usage: /price_all
-view_config - Usage: /view_config
-set_config - Usage: /setconfig SETTING=VALUE SETTING=VALUE
-emails - Usage: /emails VIEW/ADD/REMOVE email@email.com,email@email.com
-channels - Usage: /channels VIEW/ADD/REMOVE ID,ID,ID
-admins - Usage: /admins VIEW/ADD/REMOVE ID,ID,ID
+help	显示帮助信息和文档链接
+id	获取您的 Telegram 用户 ID
+new_alert	创建新的价格或技术指标告警
+cancel_alert	删除指定告警，格式：/cancel_alert TOKEN/TOKEN alert_index
+view_alerts	查看您的所有告警，可指定交易对
+get_price	获取指定交易对的实时价格
+get_indicator	获取技术指标值，格式：/get_indicator BASE/QUOTE INDICATOR TIMEFRAME PARAMS
+price_all	获取所有告警交易对的当前价格
+indicators	查看支持的指标列表和参数说明
+view_config	查看当前机器人配置
+set_config	设置配置变量，格式：/set_config SETTING=VALUE
+channels	管理告警通知频道，格式：/channels VIEW/ADD/REMOVE ID,ID,ID
+whitelist	管理白名单（管理员），格式：/whitelist VIEW/ADD/REMOVE ID,ID,ID
+admins	管理管理员权限（管理员），格式：/admins VIEW/ADD/REMOVE ID,ID,ID
+get_logs	获取系统日志（管理员）
+large_order_status	查看大额订单监控状态
+large_order_symbols	查看监控的交易对列表
+large_order_alerts	查看或清除大额订单告警（管理员）
+large_order_config	查看大额订单监控配置（管理员）
