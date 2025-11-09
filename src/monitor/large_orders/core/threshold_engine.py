@@ -3,7 +3,7 @@
 负责检测订单量阈值突破并触发告警
 """
 import asyncio
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional, Callable, List
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 import logging
