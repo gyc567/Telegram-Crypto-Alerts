@@ -54,9 +54,20 @@ def get_commands() -> dict:
 
     with open(file_path, "r") as f:
         for line in f.readlines():
-            # Splitting at the first '-' to separate command and description
-            command, description = line.strip().split(" - ", 1)
-            commands[command.strip()] = description.strip()
+            line = line.strip()
+            if not line:  # Skip empty lines
+                continue
+            # Try splitting by tab first, then fall back to " - "
+            if "\t" in line:
+                parts = line.split("\t", 1)
+            elif " - " in line:
+                parts = line.split(" - ", 1)
+            else:
+                continue  # Skip lines that don't match expected format
+            
+            if len(parts) == 2:
+                command, description = parts
+                commands[command.strip()] = description.strip()
 
     return commands
 

@@ -3,7 +3,7 @@
 负责格式化并发送Telegram告警消息
 """
 import asyncio
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Dict
 from datetime import datetime
 from dataclasses import dataclass
 import logging

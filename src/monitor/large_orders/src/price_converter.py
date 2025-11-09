@@ -89,6 +89,14 @@ class PriceConverter:
             1000000.0  # ETH/BTC -> 100 ETH * $5,000/ETH
         """
         try:
+            # 类型验证
+            if not isinstance(symbol, str):
+                raise TypeError(f"symbol must be str, got {type(symbol).__name__}: {symbol}")
+            if not isinstance(price, (int, float)):
+                raise TypeError(f"price must be numeric, got {type(price).__name__}: {price}")
+            if not isinstance(quantity, (int, float)):
+                raise TypeError(f"quantity must be numeric, got {type(quantity).__name__}: {quantity}")
+            
             # 标准化符号
             normalized = self._normalize_symbol(symbol)
             
@@ -143,15 +151,13 @@ class PriceConverter:
             >>> self._extract_currencies("ETHBTC")
             ("ETH", "BTC")
         """
-        # 常见稳定币长度列表（从长到短排序，避免误匹配）
-        stable_coin_lengths = sorted([
-            len(coin) for coin in self._stable_coins
-        ], reverse=True)
+        # 按长度从长到短排序稳定币（避免误匹配，如先匹配USDC再匹配USDT）
+        stable_coins_sorted = sorted(self._stable_coins, key=len, reverse=True)
         
-        for length in stable_coin_lengths:
-            if symbol.endswith(self._normalize_symbol(length)):
-                base_coin = symbol[:-length]
-                quote_coin = symbol[-length:]
+        for coin in stable_coins_sorted:
+            if symbol.endswith(coin):
+                base_coin = symbol[:-len(coin)]
+                quote_coin = coin
                 return base_coin, quote_coin
         
         # 如果没有匹配到稳定币，假设是3-4字符的计价货币

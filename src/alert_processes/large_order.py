@@ -160,8 +160,12 @@ class LargeOrderMonitorProcess(BaseAlertProcess):
         
         logger.info("大额订单监控进程已停止")
     
-    async def on_trade_received(self, trade_event) -> None:
-        """处理接收到的交易"""
+    def on_trade_received(self, trade_event) -> None:
+        """处理接收到的交易（同步包装）"""
+        asyncio.create_task(self._on_trade_received_async(trade_event))
+    
+    async def _on_trade_received_async(self, trade_event) -> None:
+        """处理接收到的交易（异步实现）"""
         try:
             # 转换交易为USD
             usd_value = await self.price_converter.convert_to_usd(
@@ -183,12 +187,12 @@ class LargeOrderMonitorProcess(BaseAlertProcess):
         except Exception as e:
             logger.error(f"处理交易失败: {e}", exc_info=True)
     
-    async def on_state_changed(self, state: str) -> None:
+    def on_state_changed(self, state: str) -> None:
         """处理状态变更"""
         logger.info(f"状态变更: {state}")
         self.connected = state == "connected"
     
-    async def on_error_occurred(self, error: Exception) -> None:
+    def on_error_occurred(self, error: Exception) -> None:
         """处理错误"""
         logger.error(f"WebSocket错误: {error}", exc_info=True)
     
@@ -289,6 +293,18 @@ class LargeOrderMonitorProcess(BaseAlertProcess):
         hours, remainder = divmod(int(uptime.total_seconds()), 3600)
         minutes, seconds = divmod(remainder, 60)
         return f"{hours}:{minutes:02d}:{seconds:02d}"
+    
+    def poll_user_alerts(self, tg_user_id: str) -> None:
+        """Not used in event-driven architecture"""
+        pass
+    
+    def poll_all_alerts(self):
+        """Not used in event-driven architecture"""
+        pass
+    
+    def tg_alert(self, post: str, channel_ids: list[str], pair: str):
+        """Not used - alerts are handled by AlertDispatcher"""
+        pass
 
 
 # 单例实例

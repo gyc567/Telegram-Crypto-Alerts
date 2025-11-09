@@ -8,3 +8,5 @@ pymongo
 pyyaml
 black
 websocket-client
+websockets
+aiohttp
