@@ -658,7 +658,7 @@ class TelegramBot(TeleBot):
         def on_large_order_symbols(message):
             """/large_order_symbols - 查看监控的交易对"""
             try:
-                from ..config import LARGE_ORDER_MONITORED_SYMBOLS
+                from config import LARGE_ORDER_MONITORED_SYMBOLS
                 symbols = LARGE_ORDER_MONITORED_SYMBOLS
 
                 msg = "📊 监控的交易对:\n\n"
@@ -703,7 +703,7 @@ class TelegramBot(TeleBot):
                 splt_msg = self.split_message(message)
                 if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
                     # 显示当前配置
-                    from ..config import (
+                    from config import (
                         LARGE_ORDER_THRESHOLD_USDT,
                         LARGE_ORDER_TIME_WINDOW_MINUTES,
                         LARGE_ORDER_COOLDOWN_MINUTES,
