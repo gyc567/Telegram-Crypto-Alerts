@@ -38,25 +38,75 @@ class OrderAggregator:
     
     def __init__(
         self,
-        window_minutes: int = 5,
+        window_minutes: int = None,
         threshold_usd: float = 2_000_000
     ):
+        # 动态加载配置
+        if window_minutes is None:
+            try:
+                from ....config import TAKER_CUMULATIVE_WINDOW_MINUTES
+                window_minutes = TAKER_CUMULATIVE_WINDOW_MINUTES
+            except ImportError:
+                window_minutes = 5  # 默认5分钟
+
+        # 验证窗口大小
+        if not self._validate_window(window_minutes):
+            raise ValueError(f"Invalid window size: {window_minutes}")
+
         self.window_minutes = window_minutes
         self.threshold_usd = threshold_usd
         self.window_ms = window_minutes * 60 * 1000  # 转换为毫秒
-        
+
+        # 自适应配置
+        self.batch_size = self._calculate_batch_size()
+        self.cleanup_interval = self._get_cleanup_interval()
+
         # 交易对 → 窗口条目队列
         self.trade_windows: Dict[str, deque] = {}
-        
+
         # 统计信息
         self.stats = {
             "trades_processed": 0,
             "alerts_triggered": 0,
             "window_resets": 0,
-            "cleanup_count": 0
+            "cleanup_count": 0,
+            "total_trades": 0,
+            "window_calculations": 0,
+            "batch_processing_time": 0
         }
-        
-        logger.info(f"初始化订单聚合器：{window_minutes}分钟窗口，${threshold_usd:,.0f}阈值")
+
+        logger.info(f"初始化订单聚合器：{window_minutes}分钟窗口，${threshold_usd:,.0f}阈值，批处理大小：{self.batch_size}")
+
+    def _validate_window(self, window_minutes: int) -> bool:
+        """验证时间窗口大小是否合法"""
+        try:
+            from ....config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
+            return TAKER_MIN_WINDOW_MINUTES <= window_minutes <= TAKER_MAX_WINDOW_MINUTES
+        except ImportError:
+            # 如果无法导入配置，使用默认值
+            return 1 <= window_minutes <= 1440
+
+    def _calculate_batch_size(self) -> int:
+        """根据时间窗口大小动态计算批处理大小"""
+        if self.window_minutes >= 240:  # 4小时以上
+            return 10000
+        elif self.window_minutes >= 60:  # 1小时以上
+            return 5000
+        elif self.window_minutes >= 15:  # 15分钟以上
+            return 2000
+        else:  # 15分钟以下
+            return 1000
+
+    def _get_cleanup_interval(self) -> int:
+        """获取自适应清理间隔"""
+        if self.window_minutes >= 240:
+            return 600  # 10分钟
+        elif self.window_minutes >= 60:
+            return 300  # 5分钟
+        elif self.window_minutes >= 15:
+            return 120  # 2分钟
+        else:
+            return 60   # 1分钟
     
     async def add_trade(self, symbol: str, trade_event: TradeEvent, usd_value: float) -> None:
         """

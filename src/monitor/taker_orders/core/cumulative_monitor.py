@@ -24,10 +24,10 @@ class CumulativeMonitor:
     4. 生成累积告警
     """
     
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict = None):
         """
         初始化累积监控器
-        
+
         Args:
             config: 配置字典，包含：
                 - window_size: 窗口大小（秒）
@@ -35,6 +35,20 @@ class CumulativeMonitor:
                 - min_order_count: 最少订单数
                 - directions: 监控方向列表
         """
+        # 动态加载配置
+        if config is None:
+            from ...config import (
+                TAKER_ORDER_CUMULATIVE_CONFIG,
+                TAKER_CUMULATIVE_WINDOW_MINUTES
+            )
+            # 转换为秒
+            config = {
+                "window_size": TAKER_CUMULATIVE_WINDOW_MINUTES * 60,
+                "threshold_usd": TAKER_ORDER_CUMULATIVE_CONFIG["threshold_usd"],
+                "min_order_count": TAKER_ORDER_CUMULATIVE_CONFIG["min_order_count"],
+                "directions": TAKER_ORDER_CUMULATIVE_CONFIG["directions"]
+            }
+
         self.window_size = config["window_size"]
         self.threshold_usd = config["threshold_usd"]
         self.min_order_count = config["min_order_count"]

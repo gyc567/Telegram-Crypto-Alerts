@@ -859,14 +859,213 @@ class TelegramBot(TeleBot):
             except Exception as exc:
                 self.reply_to(message, f"获取配置失败: {exc}")
 
-    def split_message(self, message: str, convert_type=None) -> list:
-        return [
-            chunk.strip() if convert_type is None else convert_type(chunk.strip())
-            for chunk in message.split(" ")[1:]
-            if not all(char == " " for char in chunk) and len(chunk) > 0
-        ]
+        @self.message_handler(commands=["taker_window"])
+        @self.is_admin
+        def on_taker_window(message):
+            """/taker_window - 管理吃单监控时间窗口配置"""
+            try:
+                splt_msg = self.split_message(message.text)
+                from .config.taker_config import TakerConfigManager
 
-    def is_whitelisted(self, func):
+                if len(splt_msg) == 0:
+                    # 显示当前配置
+                    show_current_window_config(self, message, TakerConfigManager)
+
+                elif splt_msg[0].lower() == "set":
+                    # 设置新窗口
+                    if len(splt_msg) < 2:
+                        self.reply_to(
+                            message,
+                            "❌ 格式错误。使用: /taker_window set <分钟数>\n"
+                            f"示例: /taker_window set 60"
+                        )
+                        return
+
+                    try:
+                        new_window = int(splt_msg[1])
+                    except ValueError:
+                        self.reply_to(
+                            message,
+                            f"❌ 无效值: {splt_msg[1]}。请输入数字。"
+                        )
+                        return
+
+                    if TakerConfigManager.set_window_minutes(new_window, persist=True):
+                        from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
+                        self.reply_to(
+                            message,
+                            f"✅ 吃单监控窗口已更新为 {new_window} 分钟\n"
+                            f"💡 更改将在下次重启后生效\n"
+                            f"📖 允许范围: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟"
+                        )
+                    else:
+                        from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
+                        self.reply_to(
+                            message,
+                            f"❌ 设置失败: 无效的窗口大小\n"
+                            f"允许范围: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟\n"
+                            f"必须是5的倍数"
+                        )
+
+                elif splt_msg[0].lower() == "list":
+                    # 列出可用选项
+                    show_window_options(self, message, TakerConfigManager)
+
+                elif splt_msg[0].lower() == "current":
+                    # 显示当前配置详细信息
+                    show_current_window_details(self, message, TakerConfigManager)
+
+                else:
+                    # 无效子命令
+                    self.reply_to(
+                        message,
+                        "❌ 无效子命令。\n\n"
+                        "可用命令:\n"
+                        "/taker_window - 查看当前配置\n"
+                        "/taker_window set <minutes> - 设置时间窗口\n"
+                        "/taker_window list - 查看可用选项\n"
+                        "/taker_window current - 查看详细配置"
+                    )
+
+            except Exception as exc:
+                logger.error(f"Error in taker_window command: {exc}")
+                self.reply_to(
+                    message,
+                    f"❌ 执行出错: {str(exc)}"
+                )
+
+def show_current_window_config(self, message, config_manager):
+    """显示当前时间窗口配置"""
+    current = config_manager.get_window_minutes()
+    options = config_manager.get_window_options()
+
+    msg = "📊 **吃单监控时间窗口配置**\n\n"
+    msg += f"🔹 **当前配置**: {current} 分钟\n"
+    msg += f"🔹 **可用选项**: {', '.join(map(str, options))} 分钟\n\n"
+    msg += "💡 **使用示例**:\n"
+    msg += f"`/taker_window set 60` - 设置为1小时\n\n"
+    msg += "📖 **帮助**:\n"
+    msg += "/taker_window list - 查看所有选项\n"
+    msg += "/taker_window current - 查看详细配置"
+
+    self.reply_to(message, msg)
+
+
+def show_window_options(self, message, config_manager):
+    """显示所有可用时间窗口选项"""
+    options = config_manager.get_window_options()
+    options.sort()
+
+    from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
+
+    msg = "📋 **可用时间窗口选项**\n\n"
+
+    for option in options:
+        if option == config_manager.get_window_minutes():
+            msg += f"✅ **{option} 分钟** (当前配置)\n"
+        else:
+            msg += f"⚪ **{option} 分钟**\n"
+
+    msg += f"\n💡 **设置命令**: `/taker_window set <分钟数>`\n"
+    msg += f"📖 **范围**: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟"
+
+    self.reply_to(message, msg)
+
+
+def show_current_window_details(self, message, config_manager):
+    """显示当前配置详细信息"""
+    current = config_manager.get_window_minutes()
+    config = config_manager.get_config_dict()
+
+    from .config import TAKER_CUMULATIVE_WINDOW_MINUTES, TAKER_ORDER_CUMULATIVE_CONFIG
+
+    msg = "📊 **吃单监控配置详情**\n\n"
+    msg += f"```\n"
+    msg += f"时间窗口: {current} 分钟\n"
+    msg += f"阈值: ${config['cumulative']['threshold_usd']:,} USD\n"
+    msg += f"最小订单数: {config['cumulative']['min_order_count']}\n"
+    msg += f"冷却时间: {config['cumulative']['cooldown_minutes']} 分钟\n"
+    msg += f"```\n\n"
+
+    msg += f"📈 **性能配置**:\n"
+    msg += f"```\n"
+    msg += f"清理间隔: {config['performance']['cleanup_interval']} 秒\n"
+    msg += f"最大保留: {config['performance']['max_retention']} 分钟\n"
+    msg += f"批处理大小: {config['performance']['batch_size']}\n"
+    msg += f"```"
+
+    self.reply_to(message, msg)
+
+
+def show_current_window_config(self, message, config_manager):
+    """显示当前时间窗口配置"""
+    current = config_manager.get_window_minutes()
+    options = config_manager.get_window_options()
+
+    msg = "📊 **吃单监控时间窗口配置**\n\n"
+    msg += f"🔹 **当前配置**: {current} 分钟\n"
+    msg += f"🔹 **可用选项**: {', '.join(map(str, options))} 分钟\n\n"
+    msg += "💡 **使用示例**:\n"
+    msg += f"`/taker_window set 60` - 设置为1小时\n\n"
+    msg += "📖 **帮助**:\n"
+    msg += "/taker_window list - 查看所有选项\n"
+    msg += "/taker_window current - 查看详细配置"
+
+    self.reply_to(message, msg)
+
+
+def show_window_options(self, message, config_manager):
+    """显示所有可用时间窗口选项"""
+    options = config_manager.get_window_options()
+    options.sort()
+
+    from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
+
+    msg = "📋 **可用时间窗口选项**\n\n"
+
+    for option in options:
+        if option == config_manager.get_window_minutes():
+            msg += f"✅ **{option} 分钟** (当前配置)\n"
+        else:
+            msg += f"⚪ **{option} 分钟**\n"
+
+    msg += f"\n💡 **设置命令**: `/taker_window set <分钟数>`\n"
+    msg += f"📖 **范围**: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟"
+
+    self.reply_to(message, msg)
+
+
+def show_current_window_details(self, message, config_manager):
+    """显示当前配置详细信息"""
+    current = config_manager.get_window_minutes()
+    config = config_manager.get_config_dict()
+
+    from .config import TAKER_CUMULATIVE_WINDOW_MINUTES, TAKER_ORDER_CUMULATIVE_CONFIG
+
+    msg = "📊 **吃单监控配置详情**\n\n"
+    msg += f"```\n"
+    msg += f"时间窗口: {current} 分钟\n"
+    msg += f"阈值: ${config['cumulative']['threshold_usd']:,} USD\n"
+    msg += f"最小订单数: {config['cumulative']['min_order_count']}\n"
+    msg += f"冷却时间: {config['cumulative']['cooldown_minutes']} 分钟\n"
+    msg += f"```\n\n"
+
+    msg += f"📈 **性能配置**:\n"
+    msg += f"```\n"
+    msg += f"清理间隔: {config['performance']['cleanup_interval']} 秒\n"
+    msg += f"最大保留: {config['performance']['max_retention']} 分钟\n"
+    msg += f"批处理大小: {config['performance']['batch_size']}\n"
+    msg += f"```"
+
+    self.reply_to(message, msg)
+
+
+def split_message(self, message: str, convert_type=None) -> list:
+    return [
+        chunk.strip() if convert_type is None else convert_type(chunk.strip())
+        for chunk in message.split(" ")[1:]
+        if not all(char == " " for char in chunk) and len(chunk) > 0
+    ]
         """
         (Decorator) Checks if the user is an administrator before proceeding with the function
 
