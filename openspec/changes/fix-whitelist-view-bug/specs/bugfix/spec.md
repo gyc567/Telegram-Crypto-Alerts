@@ -220,6 +220,8 @@ Invalid subcommand. Use VIEW, ADD, or REMOVE.
 #### 测试用例1: 无子命令
 **测试代码**:
 ```python
+from unittest.mock import call, create_autospec
+
 def test_whitelist_no_subcommand():
     # Setup
     message = create_mock_message("/whitelist")
