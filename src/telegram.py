@@ -587,10 +587,18 @@ class TelegramBot(TeleBot):
         def on_admins(message):
             splt_msg = self.split_message(message.text)
             try:
-                whitelist = get_whitelist()
-                if splt_msg[0].lower() == "add":
+                # 如果没有子命令或子命令是VIEW，显示管理员列表
+                if len(splt_msg) == 0 or splt_msg[0].lower() == "view":
+                    msg = "Current Administrators:\n\n"
+                    for user_id in get_whitelist():
+                        if BaseConfig(user_id).admin_status():
+                            msg += f"{user_id}\n"
+                    self.reply_to(message, msg)
+
+                elif splt_msg[0].lower() == "add":
                     new_admins = splt_msg[1].split(",")
                     failure_msgs = []
+                    whitelist = get_whitelist()
                     for i, new_admin in enumerate(new_admins):
                         try:
                             if new_admin in whitelist:
@@ -609,9 +617,11 @@ class TelegramBot(TeleBot):
                         for fail_msg in failure_msgs:
                             msg += f"\n{fail_msg}"
                     self.reply_to(message, msg)
+
                 elif splt_msg[0].lower() == "remove":
                     rm_admins = splt_msg[1].split(",")
                     failure_msgs = []
+                    whitelist = get_whitelist()
                     for i, admin in enumerate(rm_admins):
                         try:
                             if admin in whitelist:
@@ -630,13 +640,16 @@ class TelegramBot(TeleBot):
                         for fail_msg in failure_msgs:
                             msg += f"\n{fail_msg}"
                     self.reply_to(message, msg)
+
                 else:
-                    msg = "Current Administrators:\n\n"
-                    for user_id in get_whitelist():
-                        if BaseConfig(user_id).admin_status():
-                            msg += f"{user_id}\n"
-                    self.reply_to(message, msg)
+                    # 无效子命令
+                    self.reply_to(
+                        message,
+                        "Invalid subcommand. Use VIEW, ADD, or REMOVE.",
+                    )
+
             except IndexError:
+                # 这不应该再发生，但保留以防万一
                 self.reply_to(
                     message,
                     "Invalid formatting - Use /admins VIEW/ADD/REMOVE USER_ID,USER_ID",
