@@ -57,6 +57,20 @@ class TelegramBot(TeleBot):
                 f"{message.from_user.username}'s Telegram ID:\n{message.from_user.id}",
             )
 
+    def split_message(self, message: str, convert_type=None) -> list:
+        """
+        Splits a message into arguments
+
+        :param message: The message to split
+        :param convert_type: Optional type to convert each argument to
+        :return: List of arguments
+        """
+        return [
+            chunk.strip() if convert_type is None else convert_type(chunk.strip())
+            for chunk in message.split(" ")[1:]
+            if not all(char == " " for char in chunk) and len(chunk) > 0
+        ]
+
         @self.message_handler(commands=["help"])
         @self.is_whitelisted
         def on_help(message):
@@ -1058,32 +1072,6 @@ def show_current_window_details(self, message, config_manager):
     msg += f"```"
 
     self.reply_to(message, msg)
-
-
-def split_message(self, message: str, convert_type=None) -> list:
-    return [
-        chunk.strip() if convert_type is None else convert_type(chunk.strip())
-        for chunk in message.split(" ")[1:]
-        if not all(char == " " for char in chunk) and len(chunk) > 0
-    ]
-        """
-        (Decorator) Checks if the user is an administrator before proceeding with the function
-
-        :param func: PyTelegramBotAPI message handler function, with the 'message' class as the first argument
-        """
-
-        def wrapper(*args, **kw):
-            message = args[0]
-            if str(message.from_user.id) in get_whitelist():
-                return func(*args, **kw)
-            else:
-                self.reply_to(
-                    message,
-                    f"{message.from_user.username} ({message.from_user.id}) is not whitelisted",
-                )
-                return False
-
-        return wrapper
 
     def is_admin(self, func):
         """
