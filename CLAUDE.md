@@ -15,6 +15,10 @@ Use `@/openspec/AGENTS.md` to learn:
 
 Keep this managed block so 'openspec update' can refresh the instructions.
 
+## Code Generation Instructions
+
+**Always use context7 when I need code generation, setup or configuration steps, or library/API documentation.**
+
 <!-- OPENSPEC:END -->
 
 # Telegram-Crypto-Alerts - CLAUDE.md
