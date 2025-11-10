@@ -948,278 +948,278 @@ class TelegramBot(TeleBot):
                     f"❌ 执行出错: {str(exc)}"
                 )
 
-def show_current_window_config(self, message, config_manager):
-    """显示当前时间窗口配置"""
-    current = config_manager.get_window_minutes()
-    options = config_manager.get_window_options()
+    def show_current_window_config(self, message, config_manager):
+        """显示当前时间窗口配置"""
+        current = config_manager.get_window_minutes()
+        options = config_manager.get_window_options()
 
-    msg = "📊 **吃单监控时间窗口配置**\n\n"
-    msg += f"🔹 **当前配置**: {current} 分钟\n"
-    msg += f"🔹 **可用选项**: {', '.join(map(str, options))} 分钟\n\n"
-    msg += "💡 **使用示例**:\n"
-    msg += f"`/taker_window set 60` - 设置为1小时\n\n"
-    msg += "📖 **帮助**:\n"
-    msg += "/taker_window list - 查看所有选项\n"
-    msg += "/taker_window current - 查看详细配置"
+        msg = "📊 **吃单监控时间窗口配置**\n\n"
+        msg += f"🔹 **当前配置**: {current} 分钟\n"
+        msg += f"🔹 **可用选项**: {', '.join(map(str, options))} 分钟\n\n"
+        msg += "💡 **使用示例**:\n"
+        msg += f"`/taker_window set 60` - 设置为1小时\n\n"
+        msg += "📖 **帮助**:\n"
+        msg += "/taker_window list - 查看所有选项\n"
+        msg += "/taker_window current - 查看详细配置"
 
-    self.reply_to(message, msg)
-
-
-def show_window_options(self, message, config_manager):
-    """显示所有可用时间窗口选项"""
-    options = config_manager.get_window_options()
-    options.sort()
-
-    from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
-
-    msg = "📋 **可用时间窗口选项**\n\n"
-
-    for option in options:
-        if option == config_manager.get_window_minutes():
-            msg += f"✅ **{option} 分钟** (当前配置)\n"
-        else:
-            msg += f"⚪ **{option} 分钟**\n"
-
-    msg += f"\n💡 **设置命令**: `/taker_window set <分钟数>`\n"
-    msg += f"📖 **范围**: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟"
-
-    self.reply_to(message, msg)
+        self.reply_to(message, msg)
 
 
-def show_current_window_details(self, message, config_manager):
-    """显示当前配置详细信息"""
-    current = config_manager.get_window_minutes()
-    config = config_manager.get_config_dict()
+    def show_window_options(self, message, config_manager):
+        """显示所有可用时间窗口选项"""
+        options = config_manager.get_window_options()
+        options.sort()
 
-    from .config import TAKER_CUMULATIVE_WINDOW_MINUTES, TAKER_ORDER_CUMULATIVE_CONFIG
+        from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
 
-    msg = "📊 **吃单监控配置详情**\n\n"
-    msg += f"```\n"
-    msg += f"时间窗口: {current} 分钟\n"
-    msg += f"阈值: ${config['cumulative']['threshold_usd']:,} USD\n"
-    msg += f"最小订单数: {config['cumulative']['min_order_count']}\n"
-    msg += f"冷却时间: {config['cumulative']['cooldown_minutes']} 分钟\n"
-    msg += f"```\n\n"
+        msg = "📋 **可用时间窗口选项**\n\n"
 
-    msg += f"📈 **性能配置**:\n"
-    msg += f"```\n"
-    msg += f"清理间隔: {config['performance']['cleanup_interval']} 秒\n"
-    msg += f"最大保留: {config['performance']['max_retention']} 分钟\n"
-    msg += f"批处理大小: {config['performance']['batch_size']}\n"
-    msg += f"```"
-
-    self.reply_to(message, msg)
-
-
-def show_current_window_config(self, message, config_manager):
-    """显示当前时间窗口配置"""
-    current = config_manager.get_window_minutes()
-    options = config_manager.get_window_options()
-
-    msg = "📊 **吃单监控时间窗口配置**\n\n"
-    msg += f"🔹 **当前配置**: {current} 分钟\n"
-    msg += f"🔹 **可用选项**: {', '.join(map(str, options))} 分钟\n\n"
-    msg += "💡 **使用示例**:\n"
-    msg += f"`/taker_window set 60` - 设置为1小时\n\n"
-    msg += "📖 **帮助**:\n"
-    msg += "/taker_window list - 查看所有选项\n"
-    msg += "/taker_window current - 查看详细配置"
-
-    self.reply_to(message, msg)
-
-
-def show_window_options(self, message, config_manager):
-    """显示所有可用时间窗口选项"""
-    options = config_manager.get_window_options()
-    options.sort()
-
-    from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
-
-    msg = "📋 **可用时间窗口选项**\n\n"
-
-    for option in options:
-        if option == config_manager.get_window_minutes():
-            msg += f"✅ **{option} 分钟** (当前配置)\n"
-        else:
-            msg += f"⚪ **{option} 分钟**\n"
-
-    msg += f"\n💡 **设置命令**: `/taker_window set <分钟数>`\n"
-    msg += f"📖 **范围**: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟"
-
-    self.reply_to(message, msg)
-
-
-def show_current_window_details(self, message, config_manager):
-    """显示当前配置详细信息"""
-    current = config_manager.get_window_minutes()
-    config = config_manager.get_config_dict()
-
-    from .config import TAKER_CUMULATIVE_WINDOW_MINUTES, TAKER_ORDER_CUMULATIVE_CONFIG
-
-    msg = "📊 **吃单监控配置详情**\n\n"
-    msg += f"```\n"
-    msg += f"时间窗口: {current} 分钟\n"
-    msg += f"阈值: ${config['cumulative']['threshold_usd']:,} USD\n"
-    msg += f"最小订单数: {config['cumulative']['min_order_count']}\n"
-    msg += f"冷却时间: {config['cumulative']['cooldown_minutes']} 分钟\n"
-    msg += f"```\n\n"
-
-    msg += f"📈 **性能配置**:\n"
-    msg += f"```\n"
-    msg += f"清理间隔: {config['performance']['cleanup_interval']} 秒\n"
-    msg += f"最大保留: {config['performance']['max_retention']} 分钟\n"
-    msg += f"批处理大小: {config['performance']['batch_size']}\n"
-    msg += f"```"
-
-    self.reply_to(message, msg)
-
-    def is_admin(self, func):
-        """
-        (Decorator) Checks if the user is an administrator before calling the function
-
-        :param func: PyTelegramBotAPI message handler function, with the 'message' class as the first argument
-        """
-
-        def wrapper(*args, **kw):
-            message = args[0]
-            if BaseConfig(str(message.from_user.id)).admin_status():
-                return func(*args, **kw)
+        for option in options:
+            if option == config_manager.get_window_minutes():
+                msg += f"✅ **{option} 分钟** (当前配置)\n"
             else:
-                self.reply_to(
-                    message,
-                    f"{message.from_user.username} ({message.from_user.id}) is not an admin",
-                )
-                return False
+                msg += f"⚪ **{option} 分钟**\n"
 
-        return wrapper
+        msg += f"\n💡 **设置命令**: `/taker_window set <分钟数>`\n"
+        msg += f"📖 **范围**: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟"
 
-    def get_latest_binance_price(self, pair):
-        try:
-            response = requests.get(
-                self.binance_price_endpoint.format(
-                    pair.replace("/", ""), BINANCE_TIMEFRAMES[0]
-                )
-            )
-            # response = requests.get(f'https://api.binance.com/api/v3/ticker/price?symbol={pair.replace("/", "")}')
+        self.reply_to(message, msg)
+
+
+    def show_current_window_details(self, message, config_manager):
+        """显示当前配置详细信息"""
+        current = config_manager.get_window_minutes()
+        config = config_manager.get_config_dict()
+
+        from .config import TAKER_CUMULATIVE_WINDOW_MINUTES, TAKER_ORDER_CUMULATIVE_CONFIG
+
+        msg = "📊 **吃单监控配置详情**\n\n"
+        msg += f"```\n"
+        msg += f"时间窗口: {current} 分钟\n"
+        msg += f"阈值: ${config['cumulative']['threshold_usd']:,} USD\n"
+        msg += f"最小订单数: {config['cumulative']['min_order_count']}\n"
+        msg += f"冷却时间: {config['cumulative']['cooldown_minutes']} 分钟\n"
+        msg += f"```\n\n"
+
+        msg += f"📈 **性能配置**:\n"
+        msg += f"```\n"
+        msg += f"清理间隔: {config['performance']['cleanup_interval']} 秒\n"
+        msg += f"最大保留: {config['performance']['max_retention']} 分钟\n"
+        msg += f"批处理大小: {config['performance']['batch_size']}\n"
+        msg += f"```"
+
+        self.reply_to(message, msg)
+
+
+    def show_current_window_config(self, message, config_manager):
+        """显示当前时间窗口配置"""
+        current = config_manager.get_window_minutes()
+        options = config_manager.get_window_options()
+
+        msg = "📊 **吃单监控时间窗口配置**\n\n"
+        msg += f"🔹 **当前配置**: {current} 分钟\n"
+        msg += f"🔹 **可用选项**: {', '.join(map(str, options))} 分钟\n\n"
+        msg += "💡 **使用示例**:\n"
+        msg += f"`/taker_window set 60` - 设置为1小时\n\n"
+        msg += "📖 **帮助**:\n"
+        msg += "/taker_window list - 查看所有选项\n"
+        msg += "/taker_window current - 查看详细配置"
+
+        self.reply_to(message, msg)
+
+
+    def show_window_options(self, message, config_manager):
+        """显示所有可用时间窗口选项"""
+        options = config_manager.get_window_options()
+        options.sort()
+
+        from .config import TAKER_MIN_WINDOW_MINUTES, TAKER_MAX_WINDOW_MINUTES
+
+        msg = "📋 **可用时间窗口选项**\n\n"
+
+        for option in options:
+            if option == config_manager.get_window_minutes():
+                msg += f"✅ **{option} 分钟** (当前配置)\n"
+            else:
+                msg += f"⚪ **{option} 分钟**\n"
+
+        msg += f"\n💡 **设置命令**: `/taker_window set <分钟数>`\n"
+        msg += f"📖 **范围**: {TAKER_MIN_WINDOW_MINUTES}-{TAKER_MAX_WINDOW_MINUTES} 分钟"
+
+        self.reply_to(message, msg)
+
+
+    def show_current_window_details(self, message, config_manager):
+        """显示当前配置详细信息"""
+        current = config_manager.get_window_minutes()
+        config = config_manager.get_config_dict()
+
+        from .config import TAKER_CUMULATIVE_WINDOW_MINUTES, TAKER_ORDER_CUMULATIVE_CONFIG
+
+        msg = "📊 **吃单监控配置详情**\n\n"
+        msg += f"```\n"
+        msg += f"时间窗口: {current} 分钟\n"
+        msg += f"阈值: ${config['cumulative']['threshold_usd']:,} USD\n"
+        msg += f"最小订单数: {config['cumulative']['min_order_count']}\n"
+        msg += f"冷却时间: {config['cumulative']['cooldown_minutes']} 分钟\n"
+        msg += f"```\n\n"
+
+        msg += f"📈 **性能配置**:\n"
+        msg += f"```\n"
+        msg += f"清理间隔: {config['performance']['cleanup_interval']} 秒\n"
+        msg += f"最大保留: {config['performance']['max_retention']} 分钟\n"
+        msg += f"批处理大小: {config['performance']['batch_size']}\n"
+        msg += f"```"
+
+        self.reply_to(message, msg)
+
+        def is_admin(self, func):
+            """
+            (Decorator) Checks if the user is an administrator before calling the function
+
+            :param func: PyTelegramBotAPI message handler function, with the 'message' class as the first argument
+            """
+
+            def wrapper(*args, **kw):
+                message = args[0]
+                if BaseConfig(str(message.from_user.id)).admin_status():
+                    return func(*args, **kw)
+                else:
+                    self.reply_to(
+                        message,
+                        f"{message.from_user.username} ({message.from_user.id}) is not an admin",
+                    )
+                    return False
+
+            return wrapper
+
+        def get_latest_binance_price(self, pair):
             try:
-                return round(float(response.json()["lastPrice"]), 3)
+                response = requests.get(
+                    self.binance_price_endpoint.format(
+                        pair.replace("/", ""), BINANCE_TIMEFRAMES[0]
+                    )
+                )
+                # response = requests.get(f'https://api.binance.com/api/v3/ticker/price?symbol={pair.replace("/", "")}')
+                try:
+                    return round(float(response.json()["lastPrice"]), 3)
+                except KeyError:
+                    raise ValueError(
+                        f"{pair} is not a valid pair.\n" f"API Response: {response.json()}"
+                    )
             except KeyError:
                 raise ValueError(
-                    f"{pair} is not a valid pair.\n" f"API Response: {response.json()}"
+                    f"{pair} is not a valid pair.\n"
+                    f"Please make sure to use this formatting: TOKEN1/TOKEN2"
                 )
-        except KeyError:
-            raise ValueError(
-                f"{pair} is not a valid pair.\n"
-                f"Please make sure to use this formatting: TOKEN1/TOKEN2"
-            )
-        except Exception as exc:
-            logger.exception(
-                f"An unexpected error occurred when trying to fetch the binance price of {pair}",
-                exc_info=exc,
-            )
-            raise Exception(
-                f"An unexpected error has occurred when trying to fetch the price of {pair} on Binance - {exc}"
-            )
+            except Exception as exc:
+                logger.exception(
+                    f"An unexpected error occurred when trying to fetch the binance price of {pair}",
+                    exc_info=exc,
+                )
+                raise Exception(
+                    f"An unexpected error has occurred when trying to fetch the price of {pair} on Binance - {exc}"
+                )
 
-    def get_technical_indicator(self, indicator: TechnicalAlert) -> dict:
-        # Message should first be parsed, and have the technical indicator returned.
+        def get_technical_indicator(self, indicator: TechnicalAlert) -> dict:
+            # Message should first be parsed, and have the technical indicator returned.
 
-        # Prepare the params for the taapi.io single call GET request:
-        params = indicator.params
-        params["symbol"] = indicator.pair
-        params["interval"] = indicator.interval
+            # Prepare the params for the taapi.io single call GET request:
+            params = indicator.params
+            params["symbol"] = indicator.pair
+            params["interval"] = indicator.interval
 
-        # Call the taapi.io API to get the indicator values:
-        endpoint = indicator.endpoint.format(api_key=self.taapiio_cli.apikey)
-        r = self.taapiio_cli.call_api(endpoint, params, "GET")
-        try:
-            return {output_val: r[output_val] for output_val in indicator.output_vals}
-        except Exception as exc:
-            err_msg = f"Could not get technical indicator: {str(exc)}"
-            if "errors" in r.keys():
-                err_msg += f" - {r['errors']}"
-            if "error" in r.keys():
-                err_msg += f" - {r['error']}"
-            raise Exception(err_msg)
+            # Call the taapi.io API to get the indicator values:
+            endpoint = indicator.endpoint.format(api_key=self.taapiio_cli.apikey)
+            r = self.taapiio_cli.call_api(endpoint, params, "GET")
+            try:
+                return {output_val: r[output_val] for output_val in indicator.output_vals}
+            except Exception as exc:
+                err_msg = f"Could not get technical indicator: {str(exc)}"
+                if "errors" in r.keys():
+                    err_msg += f" - {r['errors']}"
+                if "error" in r.keys():
+                    err_msg += f" - {r['error']}"
+                raise Exception(err_msg)
 
-    def parse_technical_indicator_message(
-        self, message: str
-    ) -> Union[TechnicalAlert, None]:
-        """
-        Message should follow the following format:
-        /get_indicator BASE/QUOTE INDICATOR TIMEFRAME kwarg,kwarg
-        The "kwarg" parameter guide:
-            - For indicator parameters: param_name=value,param_name=value
-            - For selection output values: output=output_value_name
-            - Note: You can combine these: param_name=value,output=output_value_name
+        def parse_technical_indicator_message(
+            self, message: str
+        ) -> Union[TechnicalAlert, None]:
+            """
+            Message should follow the following format:
+            /get_indicator BASE/QUOTE INDICATOR TIMEFRAME kwarg,kwarg
+            The "kwarg" parameter guide:
+                - For indicator parameters: param_name=value,param_name=value
+                - For selection output values: output=output_value_name
+                - Note: You can combine these: param_name=value,output=output_value_name
 
-        :returns: A TechnicalIndicator object instance if params are valid, else None
-            - pair
-            - indicator
-            - interval
-            - params
-            - output
-        """
-        splt_msg = self.split_message(message)
-        pair = splt_msg[0]
-        indicator_id = splt_msg[1].upper()
-        interval = splt_msg[2].lower()
-        try:
-            args = splt_msg[3]
-            if args.lower() == "default":
+            :returns: A TechnicalIndicator object instance if params are valid, else None
+                - pair
+                - indicator
+                - interval
+                - params
+                - output
+            """
+            splt_msg = self.split_message(message)
+            pair = splt_msg[0]
+            indicator_id = splt_msg[1].upper()
+            interval = splt_msg[2].lower()
+            try:
+                args = splt_msg[3]
+                if args.lower() == "default":
+                    args = None
+            except IndexError:
                 args = None
-        except IndexError:
-            args = None
 
-        # Parse args
-        params = {}
-        output = []
-        if args is not None:
-            splt_args = args.split(",")
-            for arg in splt_args:
-                param, val = arg.split("=")
-                if param == "output":
-                    output.append(val)
-                else:
-                    params[param] = val
+            # Parse args
+            params = {}
+            output = []
+            if args is not None:
+                splt_args = args.split(",")
+                for arg in splt_args:
+                    param, val = arg.split("=")
+                    if param == "output":
+                        output.append(val)
+                    else:
+                        params[param] = val
 
-        # Validate indicator with reference:
-        indicator = self.indicators_ref_cli.validate_indicator(indicator_id, args)
-        if indicator is None:
-            return None
+            # Validate indicator with reference:
+            indicator = self.indicators_ref_cli.validate_indicator(indicator_id, args)
+            if indicator is None:
+                return None
 
-        # Add default/missing values to params and output:
-        for param, desc, default in indicator["params"]:
-            if param not in params.keys():
-                params[param] = default
-        if len(output) == 0:
-            output = indicator["output"]
+            # Add default/missing values to params and output:
+            for param, desc, default in indicator["params"]:
+                if param not in params.keys():
+                    params[param] = default
+            if len(output) == 0:
+                output = indicator["output"]
 
-        # This should be done if a single (not bulk) request needs to be made to the API
-        # params["symbol"] = pair
-        # params["interval"] = interval
+            # This should be done if a single (not bulk) request needs to be made to the API
+            # params["symbol"] = pair
+            # params["interval"] = interval
 
-        return TechnicalAlert(
-            pair,
-            indicator_id,
-            interval,
-            params,
-            output,
-            indicator["endpoint"],
-            indicator["name"],
-        )
+            return TechnicalAlert(
+                pair,
+                indicator_id,
+                interval,
+                params,
+                output,
+                indicator["endpoint"],
+                indicator["name"],
+            )
 
-    def parse_simple_indicator_message(self, message: str) -> CEXAlert:
-        msg = self.split_message(message)
-        pair = msg[0].upper()
-        indicator = msg[1].upper()
-        comparison = msg[2].upper()
-        assert comparison in SIMPLE_INDICATOR_COMPARISONS, (
-            f"{comparison} is an invalid simple indicator comparison operator.\n"
-            f"Options: {SIMPLE_INDICATOR_COMPARISONS}"
-        )
+        def parse_simple_indicator_message(self, message: str) -> CEXAlert:
+            msg = self.split_message(message)
+            pair = msg[0].upper()
+            indicator = msg[1].upper()
+            comparison = msg[2].upper()
+            assert comparison in SIMPLE_INDICATOR_COMPARISONS, (
+                f"{comparison} is an invalid simple indicator comparison operator.\n"
+                f"Options: {SIMPLE_INDICATOR_COMPARISONS}"
+            )
 
-        return CEXAlert(pair, indicator)
+            return CEXAlert(pair, indicator)
 
     def run(self):
         logger.warn(f"{self.get_me().username} started at {datetime.utcnow()} UTC+0")
