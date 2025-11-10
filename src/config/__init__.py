@@ -95,12 +95,13 @@ TAKER_ORDER_DATA_PATH = "data/taker_orders"  # Data storage path
 
 """DATABASE PREFERENCES & PATHS"""
 USE_MONGO_DB = False
-WHITELIST_ROOT = join(dirname(abspath(__file__)), "whitelist")
-RESOURCES_ROOT = join(dirname(abspath(__file__)), "resources")
-TA_DB_PATH = join(
-    dirname(abspath(__file__)), "resources/indicator_format_reference.json"
-)
-AGG_DATA_LOCATION = join(dirname(abspath(__file__)), "temp/ta_aggregate.json")
+# Calculate paths relative to the src directory (parent of config directory)
+# __file__ is src/config/__init__.py, so we go up 2 levels to get to src/
+src_dir = dirname(dirname(abspath(__file__)))
+WHITELIST_ROOT = join(src_dir, "whitelist")
+RESOURCES_ROOT = join(src_dir, "resources")
+TA_DB_PATH = join(RESOURCES_ROOT, "indicator_format_reference.json")
+AGG_DATA_LOCATION = join(src_dir, "temp/ta_aggregate.json")
 
 """TAAPI.IO"""
 INTERVALS = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "12h", "1d", "1w"]
