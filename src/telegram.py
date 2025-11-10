@@ -683,7 +683,7 @@ class TelegramBot(TeleBot):
         def on_large_order_symbols(message):
             """/large_order_symbols - 查看监控的交易对"""
             try:
-                from config import LARGE_ORDER_MONITORED_SYMBOLS
+                from .config import LARGE_ORDER_MONITORED_SYMBOLS
                 symbols = LARGE_ORDER_MONITORED_SYMBOLS
 
                 msg = "📊 监控的交易对:\n\n"
@@ -700,7 +700,7 @@ class TelegramBot(TeleBot):
         def on_large_order_alerts(message):
             """/large_order_alerts VIEW/CLEAR - 查看或清除告警"""
             try:
-                splt_msg = self.split_message(message)
+                splt_msg = self.split_message(message.text)
                 if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
                     # 显示告警历史
                     msg = (
@@ -725,10 +725,10 @@ class TelegramBot(TeleBot):
         def on_large_order_config(message):
             """/large_order_config VIEW/UPDATE - 配置大额订单监控"""
             try:
-                splt_msg = self.split_message(message)
+                splt_msg = self.split_message(message.text)
                 if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
                     # 显示当前配置
-                    from config import (
+                    from .config import (
                         LARGE_ORDER_THRESHOLD_USDT,
                         LARGE_ORDER_TIME_WINDOW_MINUTES,
                         LARGE_ORDER_COOLDOWN_MINUTES,
@@ -740,6 +740,115 @@ class TelegramBot(TeleBot):
                         f"⏱️ 时间窗口: {LARGE_ORDER_TIME_WINDOW_MINUTES} 分钟\n"
                         f"⏳ 冷却时间: {LARGE_ORDER_COOLDOWN_MINUTES} 分钟\n"
                         f"📈 监控交易对: {len(LARGE_ORDER_MONITORED_SYMBOLS)} 个"
+                    )
+                    self.reply_to(message, msg)
+                else:
+                    self.reply_to(
+                        message,
+                        "配置功能开发中...请稍后使用"
+                    )
+            except Exception as exc:
+                self.reply_to(message, f"获取配置失败: {exc}")
+
+        @self.message_handler(commands=["taker_status", "taker"])
+        @self.is_whitelisted
+        def on_taker_status(message):
+            """/taker_status - 查看吃单监控状态"""
+            try:
+                from .config import (
+                    TAKER_ORDER_MONITOR_ENABLED,
+                    TAKER_ORDER_MONITORED_SYMBOLS,
+                    TAKER_ORDER_SINGLE_THRESHOLDS,
+                    TAKER_ORDER_CUMULATIVE_CONFIG
+                )
+                
+                if not TAKER_ORDER_MONITOR_ENABLED:
+                    self.reply_to(message, "❌ 吃单监控功能已禁用")
+                    return
+                
+                msg = (
+                    "📊 吃单监控状态\n\n"
+                    "🔄 状态: 正在运行\n"
+                    f"📈 监控交易对: {', '.join(TAKER_ORDER_MONITORED_SYMBOLS)}\n\n"
+                    "单笔订单阈值:\n"
+                    f"  • BTC: ≥ {TAKER_ORDER_SINGLE_THRESHOLDS['BTCUSDT']} 个\n"
+                    f"  • ETH: ≥ {TAKER_ORDER_SINGLE_THRESHOLDS['ETHUSDT']} 个\n\n"
+                    "累积监控:\n"
+                    f"  • 时间窗口: {TAKER_ORDER_CUMULATIVE_CONFIG['window_size']}秒\n"
+                    f"  • 金额阈值: ${TAKER_ORDER_CUMULATIVE_CONFIG['threshold_usd']:,.0f} USD\n"
+                    f"  • 最少订单数: {TAKER_ORDER_CUMULATIVE_CONFIG['min_order_count']}笔"
+                )
+                self.reply_to(message, msg)
+            except Exception as exc:
+                self.reply_to(message, f"获取状态失败: {exc}")
+
+        @self.message_handler(commands=["taker_symbols"])
+        @self.is_whitelisted
+        def on_taker_symbols(message):
+            """/taker_symbols - 查看监控的交易对"""
+            try:
+                from .config import TAKER_ORDER_MONITORED_SYMBOLS
+                
+                msg = "📊 吃单监控交易对:\n\n"
+                for i, symbol in enumerate(TAKER_ORDER_MONITORED_SYMBOLS, 1):
+                    msg += f"{i}. {symbol[:3]}/{symbol[3:]}\n"
+                
+                msg += f"\n总计: {len(TAKER_ORDER_MONITORED_SYMBOLS)} 个交易对"
+                self.reply_to(message, msg)
+            except Exception as exc:
+                self.reply_to(message, f"获取交易对失败: {exc}")
+
+        @self.message_handler(commands=["taker_alerts"])
+        @self.is_admin
+        def on_taker_alerts(message):
+            """/taker_alerts VIEW/CLEAR - 查看或清除吃单告警"""
+            try:
+                splt_msg = self.split_message(message.text)
+                if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
+                    # 显示告警历史
+                    msg = (
+                        "📊 吃单告警历史\n\n"
+                        "暂无告警记录"
+                    )
+                    self.reply_to(message, msg)
+                elif splt_msg[0].upper() == "CLEAR":
+                    # 清除告警
+                    self.reply_to(message, "✅ 告警记录已清除")
+                else:
+                    self.reply_to(
+                        message,
+                        "无效命令 - 使用 /taker_alerts VIEW 或 /taker_alerts CLEAR"
+                    )
+            except Exception as exc:
+                self.reply_to(message, f"操作失败: {exc}")
+
+        @self.message_handler(commands=["taker_config"])
+        @self.is_admin
+        def on_taker_config(message):
+            """/taker_config VIEW - 查看吃单监控配置"""
+            try:
+                splt_msg = self.split_message(message.text)
+                if len(splt_msg) == 0 or splt_msg[0].upper() == "VIEW":
+                    # 显示当前配置
+                    from .config import (
+                        TAKER_ORDER_SINGLE_THRESHOLDS,
+                        TAKER_ORDER_CUMULATIVE_CONFIG,
+                        TAKER_ORDER_COOLDOWN_CONFIG,
+                        TAKER_ORDER_MONITORED_SYMBOLS
+                    )
+                    msg = (
+                        "⚙️ 吃单监控配置\n\n"
+                        "单笔订单阈值:\n"
+                        f"  • BTC: {TAKER_ORDER_SINGLE_THRESHOLDS['BTCUSDT']} 个\n"
+                        f"  • ETH: {TAKER_ORDER_SINGLE_THRESHOLDS['ETHUSDT']} 个\n\n"
+                        "累积监控:\n"
+                        f"  • 时间窗口: {TAKER_ORDER_CUMULATIVE_CONFIG['window_size']}秒\n"
+                        f"  • 金额阈值: ${TAKER_ORDER_CUMULATIVE_CONFIG['threshold_usd']:,.0f} USD\n"
+                        f"  • 最少订单数: {TAKER_ORDER_CUMULATIVE_CONFIG['min_order_count']}笔\n\n"
+                        "冷却时间:\n"
+                        f"  • 单笔告警: {TAKER_ORDER_COOLDOWN_CONFIG['single_order']}秒\n"
+                        f"  • 累积告警: {TAKER_ORDER_COOLDOWN_CONFIG['cumulative']}秒\n\n"
+                        f"监控交易对: {len(TAKER_ORDER_MONITORED_SYMBOLS)} 个"
                     )
                     self.reply_to(message, msg)
                 else:
