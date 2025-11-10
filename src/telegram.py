@@ -525,11 +525,19 @@ class TelegramBot(TeleBot):
         def on_whitelist(message):
             splt_msg = self.split_message(message.text)
             try:
-                if splt_msg[0].lower() == "add":
+                # Check if no subcommand or VIEW subcommand
+                if len(splt_msg) == 0 or splt_msg[0].lower() == "view":
+                    msg = "Current Whitelist:\n\n"
+                    for user_id in get_whitelist():
+                        msg += f"{user_id}\n"
+                    self.reply_to(message, msg)
+
+                elif splt_msg[0].lower() == "add":
                     new_users = splt_msg[1].split(",")
                     for user in new_users:
                         BaseConfig(user).whitelist_user()
                     self.reply_to(message, f"Whitelisted Users: {', '.join(new_users)}")
+
                 elif splt_msg[0].lower() == "remove":
                     rm_users = splt_msg[1].split(",")
                     for user in rm_users:
@@ -537,12 +545,16 @@ class TelegramBot(TeleBot):
                     self.reply_to(
                         message, f"Removed Users from Whitelist: {', '.join(rm_users)}"
                     )
+
                 else:
-                    msg = "Current Whitelist:\n\n"
-                    for user_id in get_whitelist():
-                        msg += f"{user_id}\n"
-                    self.reply_to(message, msg)
+                    # Invalid subcommand
+                    self.reply_to(
+                        message,
+                        "Invalid subcommand. Use VIEW, ADD, or REMOVE.",
+                    )
+
             except IndexError:
+                # This should not happen now, but keep as safety net
                 self.reply_to(
                     message,
                     "Invalid formatting - Use /whitelist VIEW/ADD/REMOVE TG_USER_ID,TG_USER_ID",
